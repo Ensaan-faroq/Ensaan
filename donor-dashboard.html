@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة المتبرع - Ensaan</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .map { height: 400px; border-radius: 16px; }
+        .flex { display: flex; justify-content: space-between; align-items: center; }
+        .points { font-size: 24px; font-weight: bold; color: #e67e22; }
+        .cooling { color: red; }
+        .submit-btn { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="flex"><h1>🩸 لوحة المتبرع</h1><div>🏆 نقاطي: <span id="points">0</span></div></div>
+    <div id="coolingMsg" class="cooling"></div>
+    <button onclick="localStorage.clear();location.href='index.html'">تسجيل خروج</button>
+</div>
+<div class="card">
+    <h2>🗺️ طلبات الدم القريبة</h2>
+    <div id="requestsMap" class="map"></div>
+</div>
+<div class="card">
+    <h2>🔐 تأكيد استلام التبرع</h2>
+    <input type="text" id="confirmCode" placeholder="أدخل كود التأكيد" style="width:100%; padding:10px; margin-bottom:10px;">
+    <button id="submitConfirm" class="submit-btn">تأكيد</button>
+    <div id="confirmResult"></div>
+</div>
+<script src="donor-dashboard.js"></script>
+</body>
+</html>
