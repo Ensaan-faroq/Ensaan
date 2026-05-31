@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ensaan - خريطة الدم</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .hero, .form-card, .map-card { background: white; border-radius: 24px; padding: 25px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .hero h1 { color: #e74c3c; text-align: center; }
+        .btn-web { background: #3498db; color: white; padding: 10px 20px; border-radius: 50px; text-decoration: none; display: inline-block; margin-top: 10px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 12px; border: 2px solid #ddd; }
+        .submit-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 50px; font-size: 18px; margin-top: 10px; cursor: pointer; }
+        .legend { display: flex; justify-content: center; gap: 30px; margin-top: 15px; }
+        #mainMap { height: 450px; border-radius: 16px; margin-top: 15px; }
+        .role-selector { display: flex; gap: 20px; justify-content: center; margin-bottom: 25px; }
+        .role-btn { padding: 10px 25px; border: none; border-radius: 50px; background: #ecf0f1; font-size: 16px; cursor: pointer; }
+        .role-btn.active { background: #3498db; color: white; }
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+        .leaderboard { position: fixed; left: 20px; top: 80px; background: white; border-radius: 16px; padding: 15px; width: 260px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1000; }
+        @media (max-width: 768px) { .leaderboard { display: none; } }
+        .gps-status { font-size: 12px; color: green; margin-top: 5px; }
+    </style>
+</head>
+<body>
+<div class="leaderboard" id="leaderboard"><h3>🏆 لوحة الصدارة</h3><table id="leaderboardTable"><tbody></tbody></table></div>
+<div class="container">
+    <div class="hero"><h1>🩸 Ensaan - خريطة الدم</h1><p>كن جزءاً من شبكة إنقاذ الأرواح</p><a href="admin-login.html" class="btn-web">👑 لوحة المسؤول</a></div>
+    <div class="form-card">
+        <div class="role-selector"><button id="roleDonorBtn" class="role-btn active">🟢 متبرع</button><button id="roleSeekerBtn" class="role-btn">🔴 محتاج</button></div>
+        <div id="donorFormSection" class="form-section active">
+            <h2>تسجيل متبرع</h2>
+            <form id="donorRegisterForm">
+                <div class="form-group"><label>الاسم الكامل</label><input type="text" id="donorName" required></div>
+                <div class="form-group"><label>رقم الهاتف (واتساب)</label><input type="tel" id="donorPhone" required></div>
+                <div class="form-group"><label>فصيلة الدم</label><select id="donorBloodType" required><option value="">اختر</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+                <div class="form-group"><label>تاريخ الميلاد</label><input type="date" id="donorBirthDate"></div>
+                <div class="form-group"><label>الجنس</label><select id="donorGender"><option>ذكر</option><option>أنثى</option></select></div>
+                <div class="form-group"><label>الدولة</label><input type="text" id="donorCountry" required></div>
+                <div class="form-group"><label>المحافظة</label><input type="text" id="donorGovernorate" required></div>
+                <div class="form-group"><label>العزلة</label><input type="text" id="donorDistrict" required></div>
+                <div class="form-group"><label>المنطقة/القرية</label><input type="text" id="donorVillage" required></div>
+                <div class="form-group"><label>أقرب 3 مستشفيات (فاصلة)</label><input type="text" id="donorHospitals"></div>
+                <div class="form-group"><label>🔴 اسحب العلامة لتحديد موقعك</label></div>
+                <div id="donorMiniMap" style="height: 250px;"></div>
+                <input type="hidden" id="donorLat" value="15.3694"><input type="hidden" id="donorLng" value="44.1910">
+                <button type="submit" class="submit-btn">إرسال كود التحقق</button>
+            </form>
+        </div>
+        <div id="seekerFormSection" class="form-section">
+            <h2>تسجيل محتاج</h2>
+            <form id="seekerRegisterForm">
+                <div class="form-group"><label>الاسم الكامل</label><input type="text" id="seekerName" required></div>
+                <div class="form-group"><label>رقم الهاتف (واتساب)</label><input type="tel" id="seekerPhone" required></div>
+                <div class="form-group"><label>فصيلة الدم المطلوبة</label><select id="seekerBloodType" required><option value="">اختر</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+                <div class="form-group"><label>الدولة</label><input type="text" id="seekerCountry" required></div>
+                <div class="form-group"><label>المحافظة</label><input type="text" id="seekerGovernorate" required></div>
+                <div class="form-group"><label>العزلة</label><input type="text" id="seekerDistrict" required></div>
+                <div class="form-group"><label>المنطقة</label><input type="text" id="seekerVillage" required></div>
+                <div class="form-group"><label>القرية/المحلة</label><input type="text" id="seekerHamlet" required></div>
+                <div class="form-group"><label>📍 اسحب العلامة لتحديد موقعك (إلزامي)</label></div>
+                <div id="seekerMiniMap" style="height: 250px;"></div>
+                <input type="hidden" id="seekerLat" value=""><input type="hidden" id="seekerLng" value="">
+                <div id="gpsStatus" class="gps-status"></div>
+                <button type="submit" class="submit-btn">إرسال كود التحقق</button>
+            </form>
+        </div>
+        <div id="verificationSection" style="display:none;">
+            <div class="form-group"><label>📲 أدخل كود التحقق</label><input type="text" id="verificationCode" maxlength="6"></div>
+            <button id="verifyBtn" class="submit-btn">تحقق وسجل</button>
+            <button id="resendBtn">إعادة إرسال</button>
+        </div>
+    </div>
+    <div class="map-card"><h2>🗺️ خريطة المتبرعين والمحتاجين</h2><div id="mainMap"></div><div class="legend"><span>🟢 متبرع</span><span>🔴 محتاج</span><span>🟡 متبرع متجه</span></div></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
