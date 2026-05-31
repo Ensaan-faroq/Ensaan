@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة المحتاج - Ensaan</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .confirmation-code { font-size: 28px; font-weight: bold; color: #e74c3c; background: #f9f9f9; padding: 15px; border-radius: 16px; text-align: center; letter-spacing: 4px; }
+        .warning { color: red; font-weight: bold; margin-top: 10px; text-align: center; }
+        .submit-btn { background: #e67e22; color: white; border: none; padding: 12px; border-radius: 50px; width: 100%; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+<div class="card"><div class="flex" style="display: flex; justify-content: space-between;"><h1>🔴 لوحة المحتاج</h1><button onclick="localStorage.clear();location.href='index.html'">تسجيل خروج</button></div></div>
+<div class="card"><h2>📋 رمز تأكيد التبرع الخاص بك</h2><div id="confirmationCodeDisplay" class="confirmation-code">-</div><div class="warning">⚠️ لا تعط هذا الكود للمتبرع إلا بعد استلام التبرع فعلياً!</div></div>
+<div class="card"><h2>🚨 طلب دم جديد</h2><button id="newRequestBtn" class="submit-btn">طلب دم عاجل</button><div id="requestStatus"></div></div>
+<script src="recipient-dashboard.js"></script>
+</body>
+</html>
