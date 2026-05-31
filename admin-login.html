@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دخول المسؤول - Ensaan</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .login-card { background: white; border-radius: 32px; padding: 40px; width: 90%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        h1 { color: #e74c3c; text-align: center; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        input { width: 100%; padding: 14px; border: 2px solid #ddd; border-radius: 16px; }
+        button { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 50px; font-size: 18px; cursor: pointer; }
+        .error { background: #fee; color: #e74c3c; padding: 12px; border-radius: 12px; margin-bottom: 20px; display: none; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="login-card">
+    <h1>👑 لوحة مسؤولي Ensaan</h1>
+    <div id="errorMsg" class="error"></div>
+    <form id="loginForm">
+        <div class="form-group"><label>اسم المستخدم</label><input type="text" id="username" required></div>
+        <div class="form-group"><label>كلمة السر</label><input type="password" id="password" required></div>
+        <button type="submit">دخول</button>
+    </form>
+</div>
+<script>
+    const SUPABASE_URL = 'https://YOUR_PROJECT_URL.supabase.co';
+    const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    async function hashPassword(pwd) {
+        const enc = new TextEncoder();
+        const hash = await crypto.subtle.digest('SHA-256', enc.encode(pwd));
+        return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const hashed = await hashPassword(password);
+        const { data, error } = await supabase.from('admins').select('*').eq('username', username).eq('password', hashed);
+        if (error || !data || data.length === 0) {
+            document.getElementById('errorMsg').style.display = 'block';
+            document.getElementById('errorMsg').innerText = '❌ اسم المستخدم أو كلمة السر غير صحيحة';
+            return;
+        }
+        const admin = data[0];
+        localStorage.setItem('admin_logged_in', 'true');
+        localStorage.setItem('admin_username', admin.username);
+        localStorage.setItem('admin_role', admin.role);
+        localStorage.setItem('admin_full_name', admin.full_name);
+        window.location.href = 'admin.html';
+    });
+</script>
+</body>
+</html>
